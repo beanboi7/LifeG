@@ -11,6 +11,7 @@ const (
 )
 
 var boardState [height][width]int
+var nextState [height][width]int
 
 func main() {
 	deadState()
@@ -43,5 +44,21 @@ func renderBoard() {
 			fmt.Printf("%d ", boardState[i][j])
 		}
 		fmt.Println()
+	}
+}
+
+func nextBoardState(){
+	initialState := boardState
+	for i := 0; i < height; i++ {
+		for j := 0; j < width; j++ {
+			cell := initialState[i][j]
+			if cell == 0 && i == 0{
+				//edge cases along the top row, then it has only 5 neighbours as opposed to normal 8 neighbours
+				if j == 0
+
+			} else if cell == 1{
+
+			}
+		}
 	}
 }
