@@ -3,6 +3,10 @@ package main
 import (
 	"fmt"
 	"math/rand"
+
+	"github.com/faiface/pixel"
+	"github.com/faiface/pixel/imdraw"
+	"github.com/faiface/pixel/pixelgl"
 )
 
 const (
@@ -16,8 +20,44 @@ var count int
 var cellState int
 var decider int
 var genCount int
+var displayBuffer [height][width]int
 
-func main() {
+const (
+	winX    float64 = 1024
+	winY    float64 = 768
+	screenW float64 = 64
+	screenH float64 = 32
+)
+
+func DrawScreen() {
+	cfg := pixelgl.WindowConfig{
+		Title:  "LifeG",
+		Bounds: pixel.R(0, 0, winX, winY),
+		VSync:  true,
+	}
+
+	win, err := pixelgl.NewWindow(cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	drew := imdraw.New(nil)
+	drew.Color = pixel.RGB(1, 1, 1)
+	dispW, disH := winX/screenW, winY/screenH
+
+	for x := 0; x < int(screenW); x++ {
+		for y := 0; y < int(screenH); y++ {
+			//will do
+			//also chyp8 code of this part in screen.go might have a bug checkit out
+		}
+	}
+
+	for !win.Closed() {
+		win.Update()
+	}
+}
+
+func Logic() {
 	initState()
 	randomState()
 	genCount = 0
@@ -26,6 +66,7 @@ func main() {
 		nextBoardState()
 		genCount += 1
 		nextGen(genCount)
+		DrawScreen()
 	}
 }
 
@@ -251,4 +292,8 @@ func nextGen(int) {
 	fmt.Println("-----------------------------------------------")
 	fmt.Println("Life's generation:", genCount)
 	fmt.Println("-----------------------------------------------")
+}
+
+func main() {
+	pixelgl.Run(run)
 }
