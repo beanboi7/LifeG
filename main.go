@@ -9,11 +9,6 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 )
 
-const (
-	height int = 32
-	width  int = 64
-)
-
 var board [height][width]int
 var nextState [height][width]int
 var count int
@@ -23,13 +18,26 @@ var genCount int
 var displayBuffer [height][width]int
 
 const (
-	winX    float64 = 1024
-	winY    float64 = 768
-	screenW float64 = 64
-	screenH float64 = 32
+	height int     = 32
+	width  int     = 64
+	winX   float64 = 1024
+	winY   float64 = 768
 )
 
-func DrawScreen() {
+func Logic() {
+	initState()
+	randomState()
+	genCount = 0
+	for {
+		renderBoard(board)
+		displayBuffer = nextBoardState()
+		genCount += 1
+		nextGen(genCount)
+		DrawScreen(displayBuffer)
+	}
+}
+
+func DrawScreen(buffer [height][width]int) {
 	cfg := pixelgl.WindowConfig{
 		Title:  "LifeG",
 		Bounds: pixel.R(0, 0, winX, winY),
@@ -43,30 +51,22 @@ func DrawScreen() {
 
 	drew := imdraw.New(nil)
 	drew.Color = pixel.RGB(1, 1, 1)
-	dispW, disH := winX/screenW, winY/screenH
+	dispW, dispH := winX/float64(width), winY/float64(height)
 
-	for x := 0; x < int(screenW); x++ {
-		for y := 0; y < int(screenH); y++ {
-			//will do
-			//also chyp8 code of this part in screen.go might have a bug checkit out
+	for y := 0; y < int(height); y++ {
+		for x := 0; x < int(width); x++ {
+			if buffer[x][y] == 0 {
+				drew.Color = pixel.RGB(0, 0, 0)
+				continue
+			}
+			drew.Push(pixel.V(dispW*float64(y), dispH*float64(x)))
+			drew.Push(pixel.V(dispW*float64(y)+dispW, dispH*float64(x)+dispH))
+			drew.Rectangle(0)
 		}
 	}
-
 	for !win.Closed() {
+		drew.Draw(win)
 		win.Update()
-	}
-}
-
-func Logic() {
-	initState()
-	randomState()
-	genCount = 0
-	for {
-		renderBoard(board)
-		nextBoardState()
-		genCount += 1
-		nextGen(genCount)
-		DrawScreen()
 	}
 }
 
@@ -102,7 +102,7 @@ func renderBoard(b [height][width]int) {
 // Any live cell with 2 or 3 live neighbors stays alive, because its neighborhood is just right
 // Any live cell with more than 3 live neighbors becomes dead, because of overpopulation
 // Any dead cell with exactly 3 live neighbors becomes alive, by reproduction
-func nextBoardState() {
+func nextBoardState() [height][width]int {
 	// initialState := boardState
 	for i := 0; i < height; i++ {
 		for j := 0; j < width; j++ {
@@ -130,6 +130,7 @@ func nextBoardState() {
 			board[i][j] = cellState
 		}
 	}
+	return board
 }
 func normalNeighbours(i, j int, iState [height][width]int) int {
 	count = 0
@@ -295,5 +296,5 @@ func nextGen(int) {
 }
 
 func main() {
-	pixelgl.Run(run)
+	pixelgl.Run(Logic)
 }
