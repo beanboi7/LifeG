@@ -3,10 +3,6 @@ package main
 import (
 	"fmt"
 	"math/rand"
-
-	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/imdraw"
-	"github.com/faiface/pixel/pixelgl"
 )
 
 var board [height][width]int
@@ -18,8 +14,8 @@ var genCount int
 var displayBuffer [height][width]int
 
 const (
-	height int     = 32
-	width  int     = 64
+	height int     = 64
+	width  int     = 128
 	winX   float64 = 1024
 	winY   float64 = 768
 )
@@ -29,44 +25,52 @@ func Logic() {
 	randomState()
 	genCount = 0
 	for {
+		clearBoard()
 		renderBoard(board)
 		displayBuffer = nextBoardState()
 		genCount += 1
-		nextGen(genCount)
-		DrawScreen(displayBuffer)
+		// nextGen(genCount)
+		// DrawScreen(displayBuffer)
 	}
 }
 
-func DrawScreen(buffer [height][width]int) {
-	cfg := pixelgl.WindowConfig{
-		Title:  "LifeG",
-		Bounds: pixel.R(0, 0, winX, winY),
-		VSync:  true,
-	}
+// func DrawScreen(buffer [height][width]int) {
+// 	cfg := pixelgl.WindowConfig{
+// 		Title:  "LifeG",
+// 		Bounds: pixel.R(0, 0, winX, winY),
+// 		VSync:  true,
+// 	}
 
-	win, err := pixelgl.NewWindow(cfg)
-	if err != nil {
-		panic(err)
-	}
+// 	win, err := pixelgl.NewWindow(cfg)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	drew := imdraw.New(nil)
-	drew.Color = pixel.RGB(1, 1, 1)
-	dispW, dispH := winX/float64(width), winY/float64(height)
+// 	drew := imdraw.New(nil)
+// 	drew.Color = pixel.RGB(1, 1, 1)
+// 	dispW, dispH := winX/float64(width), winY/float64(height)
 
-	for y := 0; y < int(height); y++ {
-		for x := 0; x < int(width); x++ {
-			if buffer[x][y] == 0 {
-				drew.Color = pixel.RGB(0, 0, 0)
-				continue
-			}
-			drew.Push(pixel.V(dispW*float64(y), dispH*float64(x)))
-			drew.Push(pixel.V(dispW*float64(y)+dispW, dispH*float64(x)+dispH))
-			drew.Rectangle(0)
-		}
-	}
-	for !win.Closed() {
-		drew.Draw(win)
-		win.Update()
+// 	for y := 0; y < int(height); y++ {
+// 		for x := 0; x < int(width); x++ {
+// 			if buffer[x][y] == 0 {
+// 				drew.Color = pixel.RGB(0, 0, 0)
+// 				continue
+// 			}
+// 			drew.Push(pixel.V(dispW*float64(y), dispH*float64(x)))
+// 			drew.Push(pixel.V(dispW*float64(y)+dispW, dispH*float64(x)+dispH))
+// 			drew.Rectangle(0)
+// 		}
+// 	}
+// 	for !win.Closed() {
+// 		drew.Draw(win)
+// 		win.Update()
+// 	}
+// }
+
+func clearBoard() {
+
+	for i := 1; i < height+1; i++ {
+		fmt.Print("\033[H\033[K")
 	}
 }
 
@@ -90,12 +94,18 @@ func renderBoard(b [height][width]int) {
 	//assign some colors to the dead and alive cells
 	//print out the board to terminal for now row after row
 	//next scope is to use ebiten and display it via GUI
+	fmt.Print("\033[?25l")
 	for i := 0; i < height; i++ {
 		for j := 0; j < width; j++ {
-			fmt.Printf("%d ", b[i][j])
+			if b[i][j] == 0 {
+				fmt.Printf("%d \033[31m", b[i][j])
+			} else if b[i][j] == 1 {
+				fmt.Printf("%d \033[36m", b[i][j])
+			}
 		}
 		fmt.Println()
 	}
+
 }
 
 // Any live cell with 0 or 1 live neighbors becomes dead, because of underpopulation
@@ -289,12 +299,13 @@ func cornerGrids(i, j int, iState [height][width]int) int {
 	return count
 }
 
-func nextGen(int) {
-	fmt.Println("-----------------------------------------------")
-	fmt.Println("Life's generation:", genCount)
-	fmt.Println("-----------------------------------------------")
-}
+// func nextGen(int) {
+// 	fmt.Println("-----------------------------------------------")
+// 	fmt.Println("Life's generation:", genCount)
+// 	fmt.Println("-----------------------------------------------")
+// }
 
 func main() {
-	pixelgl.Run(Logic)
+	// pixelgl.Run(Logic)
+	Logic()
 }
