@@ -19,6 +19,7 @@ var decider int
 var genCount int
 var displayBuffer [height][width]int
 
+//add shutdown channel for shutdown signal
 var wg sync.WaitGroup
 
 const (
@@ -66,7 +67,7 @@ func DrawScreen(buffer *[height][width]int, win pixelgl.Window) {
 	win.Clear(colornames.Black)
 	drew := imdraw.New(nil)
 	drew.Color = pixel.RGB(1, 1, 1)
-	dispW, dispH := winX/float64(width), winY/float64(height)
+	dispW, dispH := 2*(winX/float64(width)), 2*(winY/float64(height))
 	fmt.Println("dispW:", dispW, "dispH:", dispH)
 
 	for y := 0; y < int(height); y++ {
