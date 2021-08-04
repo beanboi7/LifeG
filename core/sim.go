@@ -3,7 +3,8 @@ package core
 import (
 	"fmt"
 	"math/rand"
-	"sync"
+	"os"
+	"time"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
@@ -19,9 +20,6 @@ var decider int
 var genCount int
 var displayBuffer [height][width]int
 
-//add shutdown channel for shutdown signal
-var wg sync.WaitGroup
-
 const (
 	height int     = 64
 	width  int     = 128
@@ -29,21 +27,7 @@ const (
 	winY   float64 = 364
 )
 
-func Logic(win *pixelgl.Window) {
-	initState()
-	randomState()
-	genCount = 0
-	for {
-		clearBoard()
-		renderBoard(board)
-		displayBuffer = nextBoardState()
-		genCount += 1
-		nextGen(genCount)
-		// wg.Add(1)
-		DrawScreen(&displayBuffer, *win)
-		wg.Wait()
-	}
-}
+var shutDown chan struct{}
 
 func Gui() {
 	cfg := pixelgl.WindowConfig{
@@ -57,10 +41,41 @@ func Gui() {
 		panic(err)
 	}
 
-	Logic(win)
-	// for !win.Closed() {
-	// 	win.Update()
-	// }
+	go Logic(win)
+	<-shutDown
+}
+
+func Logic(win *pixelgl.Window) {
+	clock := time.NewTicker(time.Second / time.Duration(60)) //60Hz
+	fmt.Println(clock)
+	initState()
+	randomState()
+	genCount = 0
+	for {
+		select {
+		case <-shutDown:
+			break
+		case <-clock.C:
+			if !win.Closed() {
+				clearBoard()
+				renderBoard(board)
+				displayBuffer = nextBoardState()
+				genCount += 1
+				nextGen(genCount)
+				// wg.Add(1)
+				DrawScreen(&displayBuffer, *win)
+				continue
+			}
+		}
+		break
+	}
+	sendShutDown("kewk")
+}
+
+func sendShutDown(message string) {
+	fmt.Println(message)
+	shutDown <- struct{}{}
+	os.Exit(1)
 }
 
 func DrawScreen(buffer *[height][width]int, win pixelgl.Window) {
@@ -68,7 +83,7 @@ func DrawScreen(buffer *[height][width]int, win pixelgl.Window) {
 	drew := imdraw.New(nil)
 	drew.Color = pixel.RGB(1, 1, 1)
 	dispW, dispH := 2*(winX/float64(width)), 2*(winY/float64(height))
-	fmt.Println("dispW:", dispW, "dispH:", dispH)
+	// fmt.Println("dispW:", dispW, "dispH:", dispH)
 
 	for y := 0; y < int(height); y++ {
 		for x := 0; x < int(width); x++ {
@@ -83,7 +98,6 @@ func DrawScreen(buffer *[height][width]int, win pixelgl.Window) {
 	}
 	drew.Draw(&win)
 	win.Update()
-	// wg.Done()
 }
 
 // Move the cursor to the upper-left corner of the screen.

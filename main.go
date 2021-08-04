@@ -8,5 +8,4 @@ import (
 
 func main() {
 	pixelgl.Run(core.Gui)
-	// Logic()
 }
