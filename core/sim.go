@@ -41,12 +41,13 @@ func Gui() {
 		panic(err)
 	}
 
-	go Logic(win)
-	<-shutDown
+	Logic(win)
+	// <-shutDown
+	win.Destroy()
 }
 
 func Logic(win *pixelgl.Window) {
-	clock := time.NewTicker(time.Second / time.Duration(60)) //60Hz
+	clock := time.NewTicker(time.Second / time.Duration(20)) //20Hz
 	fmt.Println(clock)
 	initState()
 	randomState()
@@ -74,7 +75,7 @@ func Logic(win *pixelgl.Window) {
 
 func sendShutDown(message string) {
 	fmt.Println(message)
-	shutDown <- struct{}{}
+	// shutDown <- struct{}{}
 	os.Exit(1)
 }
 
