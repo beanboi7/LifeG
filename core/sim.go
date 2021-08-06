@@ -42,13 +42,11 @@ func Gui() {
 	}
 
 	Logic(win)
-	// <-shutDown
 	win.Destroy()
 }
 
 func Logic(win *pixelgl.Window) {
 	clock := time.NewTicker(time.Second / time.Duration(20)) //20Hz
-	fmt.Println(clock)
 	initState()
 	randomState()
 	genCount = 0
@@ -59,23 +57,21 @@ func Logic(win *pixelgl.Window) {
 		case <-clock.C:
 			if !win.Closed() {
 				clearBoard()
-				renderBoard(board)
+				// renderBoard(board)
 				displayBuffer = nextBoardState()
 				genCount += 1
 				nextGen(genCount)
-				// wg.Add(1)
 				DrawScreen(&displayBuffer, *win)
 				continue
 			}
 		}
 		break
 	}
-	sendShutDown("kewk")
+	sendShutDown("Ta Ta TurtleMan")
 }
 
 func sendShutDown(message string) {
 	fmt.Println(message)
-	// shutDown <- struct{}{}
 	os.Exit(1)
 }
 
@@ -84,12 +80,10 @@ func DrawScreen(buffer *[height][width]int, win pixelgl.Window) {
 	drew := imdraw.New(nil)
 	drew.Color = pixel.RGB(1, 1, 1)
 	dispW, dispH := 2*(winX/float64(width)), 2*(winY/float64(height))
-	// fmt.Println("dispW:", dispW, "dispH:", dispH)
 
 	for y := 0; y < int(height); y++ {
 		for x := 0; x < int(width); x++ {
 			if buffer[y][x] == 0 {
-				// drew.Color = pixel.RGB(0, 0, 0)
 				continue
 			}
 			drew.Push(pixel.V(dispW*float64(y), dispH*float64(x)))
@@ -126,7 +120,6 @@ func randomState() {
 }
 
 func renderBoard(b [height][width]int) {
-	// fmt.Print("\033[?25l") //Hide the cursor.
 	for i := 0; i < height; i++ {
 		for j := 0; j < width; j++ {
 			if b[i][j] == 0 {
@@ -145,11 +138,10 @@ func renderBoard(b [height][width]int) {
 // Any live cell with more than 3 live neighbors becomes dead, because of overpopulation
 // Any dead cell with exactly 3 live neighbors becomes alive, by reproduction
 func nextBoardState() [height][width]int {
-	// initialState := boardState
+
 	for i := 0; i < height; i++ {
 		for j := 0; j < width; j++ {
 			cellState = board[i][j]
-			// fmt.Println("i:", i, "j:", j, "cell state is:", cellState)
 			if (i-1 > -1 && i+1 < height) && (j-1 > -1 && j+1 < width) {
 				decider = normalNeighbours(i, j, board)
 			} else if (i == 0 || i == (height-1)) && (j > 0 && j < width-1) {
